@@ -1,20 +1,25 @@
 #!/bin/sh
 
+export CC=gcc-5
+export CPP=cpp-5
+export CXX=g++-5
+export LD=gcc-5
+
 ROOT=`pwd`
 SRCDIR=$ROOT/src
 BUILDDIR=$ROOT/build
 PREFIX=$ROOT/install
 
-GCC_SRC=gcc-4.5.2.tar.bz2
-GCC_VERSION=4.5.2
+GCC_SRC=gcc-4.9.2.tar.bz2
+GCC_VERSION=4.9.2
 GCC_DIR=gcc-$GCC_VERSION
 
-BINUTILS_SRC=binutils-2.21.1a.tar.bz2
-BINUTILS_VERSION=2.21.1
+BINUTILS_SRC=binutils-2.25.tar.bz2
+BINUTILS_VERSION=2.25
 BINUTILS_DIR=binutils-$BINUTILS_VERSION
 
-NEWLIB_SRC=newlib-1.19.0.tar.gz
-NEWLIB_VERSION=1.19.0
+NEWLIB_SRC=newlib-2.2.0-1.tar.gz
+NEWLIB_VERSION=2.2.0-1
 NEWLIB_DIR=newlib-$NEWLIB_VERSION
 
 #INSIGHT_SRC=insight-6.8-1.tar.bz2
@@ -50,7 +55,7 @@ unpack_source()
 }
 
 # Create all the directories we need.
-#mkdir -p $SRCDIR $BUILDDIR $PREFIX
+mkdir -p $SRCDIR $BUILDDIR $PREFIX
 
 (
 cd $SRCDIR
@@ -80,7 +85,7 @@ cd $SRCDIR/$BINUTILS_DIR
 mkdir -p $BUILDDIR/$BINUTILS_DIR
 cd $BUILDDIR/$BINUTILS_DIR
 
-$SRCDIR/$BINUTILS_DIR/configure --target=arm-elf --prefix=$PREFIX \
+$SRCDIR/$BINUTILS_DIR/configure --target=arm-elf-eabi --prefix=$PREFIX \
     --enable-interwork --enable-threads=posix --enable-multilib --with-float=soft --disable-werror \
     && make all install
 
@@ -90,7 +95,7 @@ $SRCDIR/$BINUTILS_DIR/configure --target=arm-elf --prefix=$PREFIX \
 # Stage 2: Patch the GCC multilib rules, then build the gcc compiler only
 #
 (
-MULTILIB_CONFIG=$SRCDIR/$GCC_DIR/gcc/config/arm/t-arm-elf
+MULTILIB_CONFIG=$SRCDIR/$GCC_DIR/gcc/config/arm/t-arm-elf-eabi
 
 echo "
 
@@ -102,7 +107,7 @@ MULTILIB_DIRNAMES += normal interwork
 mkdir -p $BUILDDIR/$GCC_DIR
 cd $BUILDDIR/$GCC_DIR
 
-$SRCDIR/$GCC_DIR/configure --target=arm-elf --prefix=$PREFIX \
+$SRCDIR/$GCC_DIR/configure --target=arm-elf-eabi --prefix=$PREFIX \
     --enable-interwork --enable-multilib --with-float=soft --disable-werror \
     --enable-languages="c,c++" --with-newlib \
     --with-headers=$SRCDIR/$NEWLIB_DIR/newlib/libc/include \
@@ -125,7 +130,7 @@ cd $SRCDIR/$NEWLIB_DIR
 mkdir -p $BUILDDIR/$NEWLIB_DIR
 cd $BUILDDIR/$NEWLIB_DIR
 
-$SRCDIR/$NEWLIB_DIR/configure --target=arm-elf --prefix=$PREFIX \
+$SRCDIR/$NEWLIB_DIR/configure --target=arm-elf-eabi --prefix=$PREFIX \
     --enable-interwork --enable-multilib --with-float=soft --disable-werror \
     && make all install
 
@@ -152,7 +157,7 @@ make all install
 
 #cd $BUILDDIR/$INSIGHT_DIR
 
-#$SRCDIR/$INSIGHT_DIR/configure --target=arm-elf --prefix=$PREFIX \
+#$SRCDIR/$INSIGHT_DIR/configure --target=arm-elf-eabi --prefix=$PREFIX \
 #    --enable-interwork --enable-multilib --with-float=soft --disable-werror \
 #    && make all install
 
